@@ -119,7 +119,7 @@ class Settings_API_Helper {
 			if ( $field->is_invalid() ) {
 				$this->invalid_fields[] = $field;
 				add_settings_error(
-					$this->section,
+					$this->page,
 					$field->get_id(),
 					$field->get_error_message()
 				);
@@ -223,6 +223,60 @@ class Settings_API_Helper {
 		$this->add_field( $name, $label, 'radio', $options );
 	}
 
+	/**
+	 * getter for the section name
+	 *
+	 * @return string
+	 */
+	public function get_section() {
+
+		return $this->section;
+	}
+
+	/**
+	 * print all! sections of the current (custom) page
+	 *
+	 * @return void
+	 */
+	public function the_section() {
+
+		settings_fields( $this->page );
+		do_settings_sections( $this->page );
+	}
+
+	/**
+	 * prints the errors for the current section
+	 *
+	 * @return void
+	 */
+	public function the_errors() {
+
+		settings_errors( $this->page );
+	}
+
+	/**
+	 * print formular
+	 *
+	 * @return void
+	 */
+	public function the_form() {
+		global $settings_2;
+		?>
+		<div class="inside">
+		<form method="post" action="<?php echo admin_url( 'options.php' ); ?>">
+		<?php
+		# get all errors for this page
+		$this->the_errors();
+		# get all sections for this page
+		$this->the_section();
+		?>
+			<div class="inside">
+			<p><input type="submit" class="button-primary" value="<?php esc_attr_e( 'Submit' ); ?>" /></p>
+			</div>
+		</form>
+		</div>
+		<?php
+	}
 }
 
 endif; # class exists
