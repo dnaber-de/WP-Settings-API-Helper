@@ -8,6 +8,8 @@
  * @author David Naber <kontakt@dnaber.de>
  */
 
+if ( ! class_exists( 'Settings_API_Helper' ) ) :
+
 class Settings_API_Helper {
 
 	/**
@@ -221,6 +223,6 @@ class Settings_API_Helper {
 		$this->add_field( $name, $label, 'radio', $options );
 	}
 
-
-
 }
+
+endif; # class exists

@@ -7,6 +7,8 @@
  * @author David Naber <kontakt@dnaber.de>
  */
 
+if ( ! class_exists( 'Settings_API_Field' ) ) :
+
 class Settings_API_Field {
 
 	/**
@@ -436,3 +438,5 @@ class Settings_API_Field {
 	}
 
 }
+
+endif; # class exists
