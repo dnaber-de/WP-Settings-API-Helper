@@ -118,10 +118,9 @@ class Settings_API_Helper {
 			$field->validate( &$request );
 			if ( $field->is_invalid() ) {
 				$this->invalid_fields[] = $field;
-				add_settings_error(
-					$this->page,
-					$field->get_id(),
-					$field->get_error_message()
+				$field->add_error(
+					$field->get( 'id' ),
+					$field->get( 'error_message' )
 				);
 			}
 		}

@@ -101,19 +101,21 @@ class Settings_API_Field {
 		$this->settings   = get_option( $this->option_key, array() );
 
 		$defaults = array(
-			'id'             => $this->name . '_id',
-			'label_for'      => $this->name . '_id',
-			'class'          => '',
-			'options'        => array( /* name => label */ ), # for select-elements and radiobuttons
-			'pattern'        => '~.*~',
-			'value'          => '1', # will be used for checkboxes (not the default value of any other element!)
-			'required'       => FALSE,
-			'placeholder'    => '',
-			'default'        => '',
-			'range'          => array( /*$min, $max, $step*/ ),
-			'atts'           => array(), #additional attributes
-			'html_before'    => '',
-			'html_after'     => '',
+			'id'                => $this->name . '_id',
+			'label_for'         => $this->name . '_id',
+			'class'             => '',
+			'options'           => array( /* name => label */ ), # for select-elements and radiobuttons
+			'pattern'           => '~.*~',
+			'value'             => '1', # will be used for checkboxes (not the default value of any other element!)
+			'required'          => FALSE,
+			'placeholder'       => '',
+			'default'           => '',
+			'range'             => array( /*$min, $max, $step*/ ),
+			'atts'              => array(), #additional attributes
+			'html_before'       => '',
+			'html_after'        => '',
+			'validate_callback' => array( $this, 'default_validation' ),
+			'sanitize_callback' => array( $this, 'sanitize_by_default' ),
 			'error_messages' => apply_filters(
 				'settings_helper_field_error_messages',
 				array(
@@ -215,7 +217,20 @@ class Settings_API_Field {
 			$section,
 			$options
 		);
+	}
 
+	/**
+	 * general getter for object properties
+	 *
+	 * @param string $poperty
+	 * @return mixed
+	 */
+	public function get( $property ) {
+
+		if ( isset( $this->{ $property } ) )
+			return $this->{ $property };
+
+		return NULL;
 	}
 
 	/**
@@ -233,6 +248,16 @@ class Settings_API_Field {
 	}
 
 	/**
+	 * sets the field to invalid
+	 *
+	 * @return void
+	 */
+	public function set_invalid() {
+
+		$this->invalid = TRUE;
+	}
+
+	/**
 	 * validate
 	 *
 	 * @param array $request (Passed by Reference)
@@ -240,32 +265,86 @@ class Settings_API_Field {
 	 */
 	public function validate( &$request ) {
 
-		$request[ $this->name ] = trim( $request[ $this->name ] );
+		if ( ! empty( $this->params[ 'validate_callback' ] ) ) {
+			$request[ $this->name ] =
+				call_user_func_array(
+					$this->params[ 'validate_callback' ],
+					array(
+						$request[ $this->name ],
+						&$this
+					)
+				);
+		}
 
-		if ( empty( $request[ $this->name ] )
-		  && TRUE === ( bool ) $this->params[ 'required' ]
-		) {
-			$this->is_invalid = TRUE;
-			$this->error_message = sprintf(
-				$this->params[ 'error_messages' ][ 'missing_required' ],
-				$this->label,
-				esc_attr( $request[ $this->name ] )
-			);
-			# @todo sanitizing
-			$request[ $this->name ] = $this->settings[ $this->name ];
+		# sanitize
+		if ( $this->is_invalid ) {
+			$request[ $this->name ] =
+				call_user_func_array(
+					$this->params[ 'sanitize_callback' ],
+					array(
+						$request[ $this->name ],
+						&$this
+					)
+				);
 		}
-		elseif ( ! empty( $this->params[ 'pattern' ] )
-		  && ! preg_match( $this->params[ 'pattern' ], $request[ $this->name ] )
+	}
+
+	/**
+	 * default validation
+	 *
+	 * @param string $value
+	 * @param Settings_API_Field $field (Passed by reference)
+	 * @return string
+	 */
+	public function default_validation( $value, $field ) {
+
+		$value = trim( $value );
+		$params = $field->get( 'params' );
+
+		if ( empty( $value )
+		  && TRUE === ( bool ) $params[ 'required' ]
 		) {
-			$this->is_invalid = TRUE;
-			$this->error_message = sprintf(
-				$this->params[ 'error_messages' ][ 'mismatch_pattern' ],
-				$this->label,
-				esc_attr( $request[ $this->name ] )
+			$field->set_invalid();
+			$field->add_error(
+				$field->get( 'id' ),
+				sprintf(
+					$params[ 'error_messages' ][ 'missing_required' ],
+					$field->get( 'label' ),
+					esc_attr( $value )
+				)
 			);
-			# @todo sanitizing
-			$request[ $this->name ] = $this->settings[ $this->name ];
 		}
+		elseif ( ! empty( $params[ 'pattern' ] )
+		  && ! preg_match( $params[ 'pattern' ], $value )
+		) {
+			$field->set_invalid();
+			$field->add_error(
+				$field->get( 'id' ),
+				sprintf(
+					$params[ 'error_messages' ][ 'mismatch_pattern' ],
+					$field->get( 'label' ),
+					esc_attr( $value )
+				)
+			);
+		}
+	}
+
+	/**
+	 * sanitizing function
+	 * set the default of
+	 *
+	 * @param string $value
+	 * @param Settings_API_Field $field (Passed by reference)
+	 * @return mixed (sanitized value)
+	 */
+	public function sanitize_by_default( $value, $field ) {
+
+		if ( ! $field->is_invalid() )
+			return $value;
+
+		$value = $field->get( 'default' );
+
+		return $value;
 	}
 
 	/**
@@ -279,23 +358,19 @@ class Settings_API_Field {
 	}
 
 	/**
-	 * getter for the current error message
+	 * adds a setting error
 	 *
-	 * @return string
+	 * @param mixed $code (Error code)
+	 * @param string $message
+	 * @return bool
 	 */
-	public function get_error_message() {
+	public function add_error( $code = 0, $message = '' ) {
 
-		return $this->error_message;
-	}
-
-	/**
-	 * getter for the fields html-id
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-
-		return $this->params[ 'id' ];
+		add_settings_error(
+			$this->page,
+			$code,
+			$message
+		);
 	}
 
 	/**
