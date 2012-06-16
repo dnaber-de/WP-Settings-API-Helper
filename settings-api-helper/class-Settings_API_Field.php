@@ -112,6 +112,8 @@ class Settings_API_Field {
 			'default'        => '',
 			'range'          => array( /*$min, $max, $step*/ ),
 			'atts'           => array(), #additional attributes
+			'html_before'    => '',
+			'html_after'     => '',
 			'error_messages' => apply_filters(
 				'settings_helper_field_error_messages',
 				array(
@@ -305,9 +307,11 @@ class Settings_API_Field {
 	public function input_text( $args ) {
 
 		$atts = $this->build_atts( $args[ 'atts' ] );
+		echo $args[ 'html_before' ];
 		?>
 		<input type="text" <?php echo $atts; ?> />
 		<?php
+		echo $args[ 'html_after' ];
 
 	}
 
@@ -322,6 +326,8 @@ class Settings_API_Field {
 		$checked = checked( $args[ 'atts' ][ 'value' ], $args[ 'value' ], FALSE );
 		unset( $args[ 'atts' ][ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
+
+		echo $args[ 'html_before' ];
 		?>
 		<input
 			type="checkbox"
@@ -330,6 +336,7 @@ class Settings_API_Field {
 			<?php echo $atts; ?>
 		/>
 		<?php
+		echo $args[ 'html_after' ];
 
 	}
 
@@ -344,6 +351,8 @@ class Settings_API_Field {
 		$current = $args[ 'atts' ][ 'value' ];
 		unset( $args[ 'atts' ][ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
+
+		echo $args[ 'html_before' ];
 		?>
 		<select <?php echo $atts; ?>>
 			<?php
@@ -361,6 +370,7 @@ class Settings_API_Field {
 			} ?>
 		</select>
 		<?php
+		echo $args[ 'html_after' ];
 	}
 
 	/**
@@ -374,11 +384,14 @@ class Settings_API_Field {
 		$value = $args[ 'atts' ][ 'value' ];
 		unset( $args[ 'atts' ][ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
+
+		echo $args[ 'html_before' ];
 		?>
 		<textarea <?php echo $atts; ?>><?php
 			echo esc_attr( $value );
 		?></textarea>
 		<?php
+		echo $args[ 'html_after' ];
 	}
 
 	/**
@@ -393,6 +406,8 @@ class Settings_API_Field {
 		unset( $args[ 'atts' ][ 'value' ] );
 		$atts = $args[ 'atts' ];
 		$i = 1;
+
+		echo $args[ 'html_before' ];
 		foreach ( $args[ 'options' ] as $value => $label ) {
 			if ( is_int( $value ) )
 				$value = $label; # nummeric arrays
@@ -413,6 +428,7 @@ class Settings_API_Field {
 			<br />
 			<?php
 		}
+		echo $args[ 'html_after' ];
 	}
 
 	/**
