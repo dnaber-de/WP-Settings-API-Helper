@@ -118,10 +118,6 @@ class Settings_API_Helper {
 			$field->validate( &$request );
 			if ( $field->is_invalid() ) {
 				$this->invalid_fields[] = $field;
-				$field->add_error(
-					$field->get( 'id' ),
-					$field->get( 'error_message' )
-				);
 			}
 		}
 
@@ -163,6 +159,10 @@ class Settings_API_Helper {
 	 */
 	public function add_text( $name, $label, $options = array() ) {
 
+		$defaults = array(
+			#'sanitize_callback' => 'sanitize_text_field',
+		);
+		$options = wp_parse_args( $options, $defaults );
 		$this->add_field( $name, $label, 'text', $options );
 	}
 
@@ -210,7 +210,7 @@ class Settings_API_Helper {
 	}
 
 	/**
-	 * add a bunsh of radio-buttons
+	 * add a bunch of radio-buttons
 	 *
 	 * @param string $name
 	 * @param string $label
@@ -220,6 +220,114 @@ class Settings_API_Helper {
 	public function add_radio( $name, $label, $options = array() ) {
 
 		$this->add_field( $name, $label, 'radio', $options );
+	}
+
+	/**
+	 * add a color-input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_color( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'pattern'           => '~^#[0-9a-f]{6}$~i',
+			'sanitize_callback' => 'sh_sanitize_hex_color'
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'color', $options );
+	}
+
+	/**
+	 * add a url input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_url( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_url',
+			'sanitize_callback' => 'sh_sanitize_url'
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'url', $options );
+	}
+
+	/**
+	 * add a email input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_email( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_email',
+			'sanitize_callback' => 'sh_sanitize_email'
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'email', $options );
+	}
+
+	/**
+	 * add a email input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_date( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_date',
+			'sanitize_callback' => 'sh_sanitize_date'
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'date', $options );
+	}
+
+	/**
+	 * add a email input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_time( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_time',
+			'sanitize_callback' => 'sh_sanitize_time'
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'time', $options );
+	}
+
+	/**
+	 * add a email input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_datetime( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_datetime',
+			'sanitize_callback' => 'sh_sanitize_datetime',
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'datetime', $options );
 	}
 
 	/**

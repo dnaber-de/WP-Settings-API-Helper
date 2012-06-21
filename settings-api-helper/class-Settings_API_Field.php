@@ -47,6 +47,13 @@ class Settings_API_Field {
 	protected $error_message = '';
 
 	/**
+	 * make shure to set an error only once
+	 *
+	 * @var bool
+	 */
+	protected $has_error = FALSE;
+
+	/**
 	 * option key
 	 *
 	 * @var string
@@ -114,10 +121,10 @@ class Settings_API_Field {
 			'atts'              => array(), #additional attributes
 			'html_before'       => '',
 			'html_after'        => '',
-			'validate_callback' => array( $this, 'default_validation' ),
-			'sanitize_callback' => array( $this, 'sanitize_by_default' ),
+			'validate_callback' => '',
+			'sanitize_callback' => '',
 			'error_messages' => apply_filters(
-				'settings_helper_field_error_messages',
+				'sh_field_error_messages',
 				array(
 					'missing_required' => 'The field »%s« is required',
 					'mismatch_pattern' => '<code>%2$s</code> is not a valid value for »%1$s«',
@@ -248,13 +255,15 @@ class Settings_API_Field {
 	}
 
 	/**
-	 * sets the field to invalid
+	 * sets the field to invalid and sets the error message
 	 *
+	 * @param string $cause (Key of the default error messa
 	 * @return void
 	 */
-	public function set_invalid() {
+	public function set_invalid( $cause = 'mismatch_pattern' ) {
 
-		$this->invalid = TRUE;
+		$this->is_invalid = TRUE;
+		$this->error_message = $this->params[ 'error_messages' ][ $cause ];
 	}
 
 	/**
@@ -265,6 +274,7 @@ class Settings_API_Field {
 	 */
 	public function validate( &$request ) {
 
+		# call a hand validation function
 		if ( ! empty( $this->params[ 'validate_callback' ] ) ) {
 			$request[ $this->name ] =
 				call_user_func_array(
@@ -274,77 +284,29 @@ class Settings_API_Field {
 						&$this
 					)
 				);
+		} elseif ( ! empty( $this->params[ 'pattern' ] ) ) {
+			if ( ! preg_match( $this->params[ 'pattern' ], $request[ $this->name ] ) )
+				$this->set_invalid( 'mismatch_pattern' );
+		} elseif ( $this->params[ 'required' ] && empty( $request[ $this->name ] ) ) {
+			$this->set_invalid( 'missing_required' );
 		}
 
 		# sanitize
 		if ( $this->is_invalid ) {
-			$request[ $this->name ] =
-				call_user_func_array(
-					$this->params[ 'sanitize_callback' ],
-					array(
-						$request[ $this->name ],
-						&$this
-					)
-				);
+			$this->add_error( $request[ $this->name ] );
+			if ( ! empty( $this->params[ 'sanitize_callback' ] ) ) {
+				$request[ $this->name ] =
+					call_user_func_array(
+						$this->params[ 'sanitize_callback' ],
+						array(
+							$request[ $this->name ],
+							&$this
+						)
+					);
+			} elseif ( $this->default ) {
+				$request[ $this->name ] = $this->default;
+			}
 		}
-	}
-
-	/**
-	 * default validation
-	 *
-	 * @param string $value
-	 * @param Settings_API_Field $field (Passed by reference)
-	 * @return string
-	 */
-	public function default_validation( $value, $field ) {
-
-		$value = trim( $value );
-		$params = $field->get( 'params' );
-
-		if ( empty( $value )
-		  && TRUE === ( bool ) $params[ 'required' ]
-		) {
-			$field->set_invalid();
-			$field->add_error(
-				$field->get( 'id' ),
-				sprintf(
-					$params[ 'error_messages' ][ 'missing_required' ],
-					$field->get( 'label' ),
-					esc_attr( $value )
-				)
-			);
-		}
-		elseif ( ! empty( $params[ 'pattern' ] )
-		  && ! preg_match( $params[ 'pattern' ], $value )
-		) {
-			$field->set_invalid();
-			$field->add_error(
-				$field->get( 'id' ),
-				sprintf(
-					$params[ 'error_messages' ][ 'mismatch_pattern' ],
-					$field->get( 'label' ),
-					esc_attr( $value )
-				)
-			);
-		}
-	}
-
-	/**
-	 * sanitizing function
-	 * set the default of
-	 *
-	 * @param string $value
-	 * @param Settings_API_Field $field (Passed by reference)
-	 * @return mixed (sanitized value)
-	 */
-	public function sanitize_by_default( $value, $field ) {
-
-		if ( ! $field->is_invalid() )
-			return $value;
-
-		$value = $field->get( 'default' );
-
-		return $value;
 	}
 
 	/**
@@ -360,17 +322,28 @@ class Settings_API_Field {
 	/**
 	 * adds a setting error
 	 *
+	 * @param mixed $value
 	 * @param mixed $code (Error code)
 	 * @param string $message
 	 * @return bool
 	 */
-	public function add_error( $code = 0, $message = '' ) {
+	public function add_error( $value = '', $code = 0, $message = '' ) {
+
+		if ( empty( $message ) )
+			$message = $this->error_message;
+
+		if ( empty( $code ) )
+			$code = $this->name;
+
+		if ( $this->has_error )
+			return;
 
 		add_settings_error(
 			$this->page,
 			$code,
-			$message
+			sprintf( $message, $this->name, $value )
 		);
+		$this->has_error = TRUE;
 	}
 
 	/**
@@ -379,15 +352,79 @@ class Settings_API_Field {
 	 * @param array $args
 	 * @return void
 	 */
-	public function input_text( $args ) {
+	public function input_text( $args, $type = 'text' ) {
 
 		$atts = $this->build_atts( $args[ 'atts' ] );
 		echo $args[ 'html_before' ];
 		?>
-		<input type="text" <?php echo $atts; ?> />
+		<input type="<?php echo $type; ?>" <?php echo $atts; ?> />
 		<?php
 		echo $args[ 'html_after' ];
 
+	}
+
+	/**
+	 * prints a color-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_color( $args ) {
+
+		$this->input_text( $args, 'color' );
+	}
+
+	/**
+	 * prints a url-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_url( $args ) {
+
+		$this->input_text( $args, 'url' );
+	}
+
+	/**
+	 * prints a email-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_email( $args ) {
+
+		$this->input_text( $args, 'email' );
+	}
+
+	/**
+	 * prints a time-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_time( $args ) {
+
+		$this->input_text( $args, 'time' );
+	}
+	/**
+	 * prints a date-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_date( $args ) {
+
+		$this->input_text( $args, 'date' );
+	}
+	/**
+	 * prints a datetime-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_datetime( $args ) {
+
+		$this->input_text( $args, 'datetime' );
 	}
 
 	/**
@@ -526,6 +563,18 @@ class Settings_API_Field {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * author's best
+	 */
+	public function dump() {
+		$args = func_get_args();
+		echo '<pre>';
+		foreach ( $args as $arg ) {
+			var_dump( $arg );
+		}
+		exit;
 	}
 
 }

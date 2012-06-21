@@ -9,16 +9,19 @@
  * @author David Naber <kontakt@dnaber.de>
  */
 
-
 if ( ! function_exists( 'sh_sanitize_hex_color' ) ) {
 
 	/**
 	 * sanitizes a hex color string
 	 *
 	 * @param string $color
-	 * @return string $default (Optional)
+	 * @return Settings_API_Field $field (Optional)
 	 */
-	function sh_sanitize_hex_color( $color, $default = '#000000' ) {
+	function sh_sanitize_hex_color( $color, $field = NULL ) {
+
+		$default = '#ffffff';
+		if ( is_a( $field, 'Settings_API_Field' ) )
+			$default = $field->get( 'default' );
 
 		# begin with a hash
 		if ( 1 !== strpos( '#', $color ) ) {
@@ -58,14 +61,23 @@ if ( ! function_exists( 'sh_validate_datetime' ) ) {
 	 * validates a datetime string by comparing the input with the sanitized value
 	 *
 	 * @param string $datetime
-	 * @retun bool
+	 * @param Settings_API_Field $field (Optional)
+	 * @retun mixed
 	 */
-	function sh_validate_datetime( $datetime ) {
+	function sh_validate_datetime( $datetime, $field = NULL ) {
 
 		$datetime  = trim( $datetime );
 		$sanitized = sh_sanitize_datetime( $datetime );
+		$return    = ! ( bool ) strcmp( $datetime, $sanitized );
 
-		return ! ( bool ) strcmp( $datetime, $sanitized );
+		if ( ! $return && is_a( $field, 'Settings_API_Field' ) )  {
+			$field->is_invalid();
+			$return = $datetime;
+		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
+			$return = $datetime;
+		}
+
+		return $return;
 	}
 }
 
@@ -162,14 +174,22 @@ if ( ! function_exists( 'sh_validate_date' ) ) {
 	 * validates a date string
 	 *
 	 * @param string $date
-	 * @retun bool
+	 * @param Settings_API_Field $field (Optional)
+	 * @retun mixed
 	 */
-	function sh_validate_date( $date ) {
+	function sh_validate_date( $date, $field = NULL ) {
 
-		$datetime  = trim( $date );
+		$date      = trim( $date );
 		$sanitized = sh_sanitize_date( $date );
+		$return    = ! ( bool ) strcmp( $date, $sanitized );
+		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
+			$field->is_invalid();
+			$return = $datetime;
+		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
+			$return = $datetime;
+		}
 
-		return ! ( bool ) strcmp( $date, $sanitized );
+		return $return;
 	}
 }
 
@@ -264,14 +284,22 @@ if ( ! function_exists( 'sh_validate_time' ) ) {
 	 * validates a time string
 	 *
 	 * @param string $datetime
-	 * @retun bool
+	 * @param Settings_API_Field $field (Optional)
+	 * @retun mixed
 	 */
-	function sh_validate_time( $time ) {
+	function sh_validate_time( $time, $field = NULL ) {
 
-		$datetime  = trim( $time );
+		$time      = trim( $time );
 		$sanitized = sh_sanitize_time( $time );
+		$return    = ! ( bool ) strcmp( $time, $sanitized );
+		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
+			$field->is_invalid();
+			$return = $time;
+		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
+			$return = $time;
+		}
 
-		return ! ( bool ) strcmp( $time, $sanitized );
+		return $return;
 	}
 }
 
@@ -330,5 +358,79 @@ if ( ! function_exists( 'sh_sanitize_time' ) ) {
 			':'
 		);
 
+	}
+}
+
+if ( ! function_exists( 'sh_validate_email' ) ) {
+
+	/**
+	 * check for valid email address
+	 *
+	 * @param string $email
+	 * @param Settings_API_Field $field (Optional)
+	 * @return mixed
+	 */
+	function sh_validate_email( $email, $field = NULL ) {
+
+		$return = filter_var( trim( $email ), FILTER_VALIDATE_EMAIL );
+		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
+			$field->is_invalid();
+			$return = $email;
+		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
+			$return = $email;
+		}
+
+		return $return;
+	}
+}
+
+if ( ! function_exists( 'sh_sanitize_email' ) ) {
+
+	/**
+	 * sanitizes an email address
+	 *
+	 * @param string $email
+	 * @return string
+	 */
+	function sh_sanitize_email( $email ) {
+
+		return filter_var( $email, FILTER_SANITIZE_EMAIL );
+	}
+}
+
+if ( ! function_exists( 'sh_validate_url' ) ) {
+
+	/**
+	 * check for valid url
+	 *
+	 * @param string $url
+	 * @param Settings_API_Field $field (Optional)
+	 * @return mixed
+	 */
+	function sh_validate_url( $url, $field = NULL ) {
+
+		$return = filter_var( $url, FILTER_VALIDATE_URL );
+		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
+			$field->is_invalid();
+			$return = $url;
+		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
+			$return = $url;
+		}
+
+		return $return;
+	}
+}
+
+if ( ! function_exists( 'sh_sanitize_url' ) ) {
+
+	/**
+	 * sanitizes an url
+	 *
+	 * @param string $url
+	 * @return string
+	 */
+	function sh_sanitize_url( $url ) {
+
+		return filter_var( $url, FILTER_VALIDATE_URL );
 	}
 }
