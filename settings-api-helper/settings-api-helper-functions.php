@@ -71,7 +71,7 @@ if ( ! function_exists( 'sh_validate_datetime' ) ) {
 		$return    = ! ( bool ) strcmp( $datetime, $sanitized );
 
 		if ( ! $return && is_a( $field, 'Settings_API_Field' ) )  {
-			$field->is_invalid();
+			$field->set_invalid();
 			$return = $datetime;
 		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
 			$return = $datetime;
@@ -183,7 +183,7 @@ if ( ! function_exists( 'sh_validate_date' ) ) {
 		$sanitized = sh_sanitize_date( $date );
 		$return    = ! ( bool ) strcmp( $date, $sanitized );
 		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
-			$field->is_invalid();
+			$field->set_invalid();
 			$return = $datetime;
 		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
 			$return = $datetime;
@@ -293,7 +293,7 @@ if ( ! function_exists( 'sh_validate_time' ) ) {
 		$sanitized = sh_sanitize_time( $time );
 		$return    = ! ( bool ) strcmp( $time, $sanitized );
 		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
-			$field->is_invalid();
+			$field->set_invalid();
 			$return = $time;
 		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
 			$return = $time;
@@ -374,7 +374,7 @@ if ( ! function_exists( 'sh_validate_email' ) ) {
 
 		$return = filter_var( trim( $email ), FILTER_VALIDATE_EMAIL );
 		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
-			$field->is_invalid();
+			$field->set_invalid();
 			$return = $email;
 		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
 			$return = $email;
@@ -411,7 +411,7 @@ if ( ! function_exists( 'sh_validate_url' ) ) {
 
 		$return = filter_var( $url, FILTER_VALIDATE_URL );
 		if ( ! $return && is_a( $field, 'Settings_API_Field' ) ) {
-			$field->is_invalid();
+			$field->set_invalid();
 			$return = $url;
 		} elseif ( is_a( $field, 'Settings_API_Field' ) ) {
 			$return = $url;
@@ -429,8 +429,8 @@ if ( ! function_exists( 'sh_sanitize_url' ) ) {
 	 * @param string $url
 	 * @return string
 	 */
-	function sh_sanitize_url( $url ) {
+	function sh_sanitize_url( $url, $field ) {
 
-		return filter_var( $url, FILTER_VALIDATE_URL );
+		return filter_var( $url, FILTER_SANITIZE_URL );
 	}
 }
