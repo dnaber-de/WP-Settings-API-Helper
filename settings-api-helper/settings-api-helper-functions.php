@@ -429,8 +429,86 @@ if ( ! function_exists( 'sh_sanitize_url' ) ) {
 	 * @param string $url
 	 * @return string
 	 */
-	function sh_sanitize_url( $url, $field ) {
+	function sh_sanitize_url( $url ) {
 
 		return filter_var( $url, FILTER_SANITIZE_URL );
+	}
+}
+
+if ( ! function_exists( 'sh_validate_number' ) ) {
+
+	/**
+	 * validates a numeric value
+	 *
+	 * @param string $number
+	 * @param Settings_API_Field $field
+	 * @return bool
+	 */
+	function sh_validate_number( $number, $field ) {
+
+		$valid = TRUE;
+		$sanitized = sh_sanitize_number( $number, $field );
+
+		if ( is_int( $sanitized ) && ( int ) $number !== $sanitized )
+			$valid = FALSE;
+		elseif ( is_float( $sanitized ) && ( float ) $number !== $sanitized )
+			$valid = FALSE;
+
+		if ( ! $valid )
+			$field->set_invalid();
+
+		return $number;
+	}
+}
+
+if ( ! function_exists( 'sh_sanitize_number' ) ) {
+
+	/**
+	 * sanitizes a number
+	 *
+	 * @param string $number
+	 * @param Settings_API_Field $field
+	 * @return float|int
+	 */
+	function sh_sanitize_number( $number, $field ) {
+
+		$params = $field->get( 'params' );
+		$min    = empty( $params[ 'range' ][ 0 ] ) ? NULL : $params[ 'range' ][ 0 ];
+		$max    = empty( $params[ 'range' ][ 1 ] ) ? NULL : $params[ 'range' ][ 1 ];
+		$range  = empty( $params[ 'range' ][ 2 ] ) ? 1    : $params[ 'range' ][ 2 ];
+		if ( $min && ( ( int ) $min != ( float ) $min ) ) {
+			# expecting float values in $number
+			$range  = ( float ) $range;
+			$number = ( float ) $number;
+			if ( $min )
+				$min = ( float ) $min;
+			if ( $max )
+				$max = ( float ) $max;
+		} else {
+			# cast values as integer
+			$range  = ( int ) $range;
+			$number = ( int ) $number;
+			if ( $min )
+				$min = ( int ) $min;
+			if ( $max )
+				$max = ( int ) $max;
+		}
+
+		if ( NULL !== $min && $number < $min ) {
+			$number = $min;
+		}
+
+		if ( NULL !== $max && $number > $max ) {
+			$number = $max;
+		}
+
+		$base = ( int ) $min;
+		if ( $min !== $number && 0 !== ( $number - $base ) % $range ) {
+			$factor = intval( ( $number - $base ) / $range );
+
+			$number = ( $factor * $range ) + $base;
+		}
+
+		return $number;
 	}
 }

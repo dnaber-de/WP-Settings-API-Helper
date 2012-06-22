@@ -115,6 +115,7 @@ class Settings_API_Field {
 			'pattern'           => '~.*~',
 			'value'             => '1', # will be used for checkboxes (not the default value of any other element!)
 			'required'          => FALSE,
+			'autofocus'         => FALSE,
 			'placeholder'       => '',
 			'default'           => '',
 			'range'             => array( /*$min, $max, $step*/ ),
@@ -199,7 +200,8 @@ class Settings_API_Field {
 			'placeholder'
 		);
 		$bool_atts = array(
-			'required'
+			'required',
+			'autofocus'
 		);
 		foreach ( $options as $k => $v ) {
 			if ( ! in_array( $k, $html_atts ) )
@@ -416,6 +418,7 @@ class Settings_API_Field {
 
 		$this->input_text( $args, 'date' );
 	}
+
 	/**
 	 * prints a datetime-input field
 	 *
@@ -425,6 +428,28 @@ class Settings_API_Field {
 	public function input_datetime( $args ) {
 
 		$this->input_text( $args, 'datetime' );
+	}
+
+	/**
+	 * prints a number-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_number( $args ) {
+
+		$this->input_text( $args, 'number' );
+	}
+
+	/**
+	 * prints a number-input field
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	public function input_range( $args ) {
+
+		$this->input_text( $args, 'range' );
 	}
 
 	/**

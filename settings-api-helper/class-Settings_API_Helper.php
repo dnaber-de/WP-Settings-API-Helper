@@ -331,6 +331,52 @@ class Settings_API_Helper {
 	}
 
 	/**
+	 * add a number input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_number( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_number',
+			'sanitize_callback' => 'sh_sanitize_number',
+			'range'             => array(
+				'', #min
+				'', #max
+				''  #step
+			)
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'number', $options );
+	}
+
+	/**
+	 * add a range input
+	 *
+	 * @param string $name
+	 * @param string $label
+	 * @param array $options (Optional)
+	 * @return void
+	 */
+	public function add_range( $name, $label, $options = array() ) {
+
+		$defaults = array(
+			'validate_callback' => 'sh_validate_number',
+			'sanitize_callback' => 'sh_sanitize_number',
+			'range'             => array(
+				'', #min
+				'', #max
+				''  #step
+			)
+		);
+		$options = wp_parse_args( $options, $defaults );
+		$this->add_field( $name, $label, 'range', $options );
+	}
+
+	/**
 	 * getter for the section name
 	 *
 	 * @return string
