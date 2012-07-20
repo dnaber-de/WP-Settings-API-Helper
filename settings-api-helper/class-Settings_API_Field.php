@@ -160,7 +160,7 @@ class Settings_API_Field {
 		# merge options with defaults
 		$options = wp_parse_args( $options, $defaults );
 
-		if ( ! empty( $options[ 'default' ] ) )
+		if ( isset( $options[ 'default' ] ) )
 			$this->default = $options[ 'default' ];
 		$this->set_default(); # write defaults into DB
 
@@ -249,7 +249,7 @@ class Settings_API_Field {
 	 */
 	protected function set_default() {
 
-		if ( isset( $this->settings[ $this->name ] ) )
+		if ( isset( $this->settings[ $this->name ] ) || ! isset( $this->default ) )
 			return;
 
 		$this->settings[ $this->name ] = $this->default;
