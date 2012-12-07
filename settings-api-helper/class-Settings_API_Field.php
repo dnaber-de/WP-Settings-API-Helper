@@ -356,6 +356,7 @@ class Settings_API_Field {
 	 */
 	public function input_text( $args, $type = 'text' ) {
 
+		$atts[ 'value' ] = $this->filter_output_value( $atts[ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
 		echo $args[ 'html_before' ];
 		?>
@@ -518,7 +519,7 @@ class Settings_API_Field {
 	 */
 	public function input_textarea( $args ) {
 
-		$value = $args[ 'atts' ][ 'value' ];
+		$value = $this->filter_output_value( $args[ 'atts' ][ 'value' ] );
 		unset( $args[ 'atts' ][ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
 
@@ -566,6 +567,27 @@ class Settings_API_Field {
 			<?php
 		}
 		echo $args[ 'html_after' ];
+	}
+
+	/**
+	 * apply a callback to the ouputted value
+	 *
+	 * @var mixed $value
+	 * @return mixed
+	 */
+	public function filter_output_value( $output ) {
+
+		if ( ! empty( $this->params[ 'output_callback' ] ) ) {
+			$output = call_user_func_array(
+				$this->params[ 'output_callback' ],
+				array(
+					$output,
+					$this
+				)
+			);
+		}
+
+		return $output;
 	}
 
 	/**
