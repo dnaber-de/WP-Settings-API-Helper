@@ -6,6 +6,7 @@
  * @package Wordpress
  * @subpackage WP Settings API Helper
  * @author David Naber <kontakt@dnaber.de>
+ * @version 2013.05.23
  */
 
 if ( ! class_exists( 'Settings_API_Helper' ) ) :

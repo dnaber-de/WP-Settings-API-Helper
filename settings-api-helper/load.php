@@ -1,7 +1,15 @@
 <?php
 
 /**
- * include this file to load the Settings API Helper
+ * WP Settings API helper
+ *
+ * autoloads some classes to make the settings api more easier to work with
+ *
+ * @link https://github.com/dnaber-de/WP-Settings-API-Helper
+ * @package Wordpress
+ * @subpackage Settings API Helper
+ * @author David Naber <kontakt@dnaber.de>
+ * @version 2013.05.23
  */
 
 if ( ! class_exists( 'Settings_Api_Autoload' ) ) {
@@ -14,7 +22,6 @@ if ( ! class_exists( 'Settings_Api_Autoload' ) ) {
 		 * @var array
 		 */
 		protected static $include_paths = array();
-
 
 		/**
 		 * add include paths
@@ -60,5 +67,4 @@ if ( ! class_exists( 'Settings_Api_Autoload' ) ) {
 	spl_autoload_register( array( 'Settings_API_Autoload', 'load' ) );
 	#functions
 	require_once dirname( __FILE__ ) . '/settings-api-helper-functions.php';
-
 }
