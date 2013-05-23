@@ -356,7 +356,7 @@ class Settings_API_Field {
 	 */
 	public function input_text( $args, $type = 'text' ) {
 
-		$atts[ 'value' ] = $this->filter_output_value( $atts[ 'value' ] );
+		$args[ 'atts' ][ 'value' ] = $this->filter_output_value( $args[ 'atts' ][ 'value' ] );
 		$atts = $this->build_atts( $args[ 'atts' ] );
 		echo $args[ 'html_before' ];
 		?>
