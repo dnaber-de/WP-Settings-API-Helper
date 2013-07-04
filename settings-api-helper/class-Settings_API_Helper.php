@@ -116,7 +116,7 @@ class Settings_API_Helper {
 	public function validate( $request ) {
 
 		foreach ( $this->fields as $field ) {
-			$field->validate( &$request );
+			$field->validate( $request );
 			if ( $field->is_invalid() ) {
 				$this->invalid_fields[] = $field;
 			}
