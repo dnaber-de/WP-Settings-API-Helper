@@ -9,7 +9,7 @@
  * @package Wordpress
  * @subpackage Settings API Helper
  * @author David Naber <kontakt@dnaber.de>
- * @version 2013.05.23
+ * @version 2014.03.30
  */
 
 if ( ! class_exists( 'Settings_Api_Autoload' ) ) {

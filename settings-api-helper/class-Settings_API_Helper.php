@@ -2,11 +2,10 @@
 /**
  * helper for the settings API of Wordpress
  *
- * @version 0.1
  * @package Wordpress
  * @subpackage WP Settings API Helper
  * @author David Naber <kontakt@dnaber.de>
- * @version 2013.05.23
+ * @version 2014.03.30
  */
 
 if ( ! class_exists( 'Settings_API_Helper' ) ) :
