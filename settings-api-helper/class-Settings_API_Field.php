@@ -497,7 +497,7 @@ class Settings_API_Field {
 		<select <?php echo $atts; ?>>
 			<?php
 			foreach ( $args[ 'options' ] as $value => $label ) {
-				if ( is_int( $value ) && ! $options[ 'assoc' ] )
+				if ( is_int( $value ) && ! $args[ 'assoc' ] )
 					$value = $label;
 				?>
 				<option
