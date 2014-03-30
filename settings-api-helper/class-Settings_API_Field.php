@@ -113,6 +113,7 @@ class Settings_API_Field {
 			'label_for'         => $this->name . '_id',
 			'class'             => '',
 			'options'           => array( /* name => label */ ), # for select-elements and radiobuttons
+			'assoc'             => FALSE, # treat options for select-elements as associative array, even with numeric keys
 			'pattern'           => '~.*~',
 			'value'             => '1', # will be used for checkboxes (not the default value of any other element!)
 			'required'          => FALSE,
@@ -496,7 +497,7 @@ class Settings_API_Field {
 		<select <?php echo $atts; ?>>
 			<?php
 			foreach ( $args[ 'options' ] as $value => $label ) {
-				if ( is_int( $value ) )
+				if ( is_int( $value ) && ! $options[ 'assoc' ] )
 					$value = $label;
 				?>
 				<option
